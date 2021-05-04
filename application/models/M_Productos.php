@@ -51,14 +51,41 @@ class M_Productos extends CI_Model {
       return $this->db->affected_rows() > 0;
    }
 
-   public function obtener_producto($id)
+   public function obtener_producto($id,$campos = [])
    {
+      foreach($campos as $campo){
+         $this->db->select($campo);
+      }
       $this->db->where('id_producto',$id);
+      $this->db->where('estado_id',1);
       $query = $this->db->get('productos');
       if($query->num_rows() > 0){
          return $query->row_array();
       }
 
       return FALSE;
+   }
+
+   public function actualizar_producto($id,$nombre,$referencia,$precio,$peso,$categoria_id,$stock)
+   {
+      $data = [
+         'nombre' => $nombre,
+         'referencia' => $referencia,
+         'precio' => $precio,
+         'peso' => $peso,
+         'categoria_id' => $categoria_id,
+         'stock' => $stock
+      ];
+      $this->db->where('id_producto',$id);
+      $this->db->update('productos',$data);
+      return $this->db->affected_rows() > 0;
+   }
+
+   public function actualizar_producto_stock($id,$cantidad,$operacion = '+')
+   {
+      $this->db->set('stock','stock '.$operacion.' '.$cantidad,FALSE);
+      $this->db->where('id_producto',$id);
+      $this->db->update('productos');
+      return $this->db->affected_rows() > 0;
    }
 }

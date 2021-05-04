@@ -37,9 +37,6 @@ class Gestion extends CI_Controller {
 
 				$this->session->set_flashdata('producto_info',$producto_info);
 				break;
-			case 'editar':
-				// $this->M_Productos->
-				break;
 			case 'eliminar':
 				$mensaje = [
 					'exito' => 0,
@@ -85,12 +82,15 @@ class Gestion extends CI_Controller {
          'required' => 'Por favor ingrese el stock del producto',
 			'integer' => 'El stock debe ser un número entero'
 		]);
+		$this->form_validation->set_rules('id_producto','Código del producto','integer',[
+			'integer' => 'El código del producto debe ser un número entero.'
+		]);
       if($this->form_validation->run() == FALSE){
          $this->load->view('gestion/productos');
       }else{
 			$mensaje = [
 				'exito' => 0,
-				'desc' => 'Algo falló al insertar el registro.'
+				'desc' => 'Algo falló al guardar el registro.'
 			];
 			// Sanitizar algunos campos del formulario
 			$nombre = filter_var($this->input->post('nombre',TRUE),FILTER_SANITIZE_STRING);
@@ -100,11 +100,16 @@ class Gestion extends CI_Controller {
 			$categoria_id = $this->input->post('categoria',TRUE);
 			$stock = $this->input->post('stock',TRUE);
 
-			// Guadar el nuevo producto en bd
-			$guardado = $this->M_Productos->guardar_nuevo_producto($nombre,$referencia,$precio,$peso,$categoria_id,$stock);
+			if($id_producto = $this->input->post('id_producto',TRUE)){
+				// Actualizar el producto en bd
+				$guardado = $this->M_Productos->actualizar_producto($id_producto,$nombre,$referencia,$precio,$peso,$categoria_id,$stock);
+			}else{
+				// Guadar el nuevo producto en bd
+				$guardado = $this->M_Productos->guardar_nuevo_producto($nombre,$referencia,$precio,$peso,$categoria_id,$stock);
+			}
 			if($guardado){
 				$mensaje['exito'] = 1;
-				$mensaje['desc'] = 'Item guardado exitosamente!';
+				$mensaje['desc'] = 'Item '.(isset($id_producto) ? 'actualizado':'guardado').' exitosamente!';
 			}
 			$this->session->set_flashdata('mensaje',$mensaje);
 			redirect('Gestion');
